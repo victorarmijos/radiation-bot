@@ -78,10 +78,3 @@ app.listen(PORT, () => {
 });
 ```
 
----
-
-Guarda y sube a GitHub:
-```
-git add .
-git commit -m "feat: registra mensajes en Supabase"
-git push
