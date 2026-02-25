@@ -1,6 +1,8 @@
+// index.js actualizado — integra flujo de diagnóstico
 require('dotenv').config();
 const express = require('express');
 const pool    = require('./config/db');
+const { iniciarDiagnostico, procesarRespuestaDiagnostico } = require('./controllers/diagnosticoController');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -12,21 +14,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// GET /webhook — Verificación de Meta
+// GET /webhook — Verificacion de Meta
 app.get('/webhook', (req, res) => {
   const mode      = req.query['hub.mode'];
   const token     = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
   if (mode === 'subscribe' && token === process.env.VERIFY_TOKEN) {
-    console.log('✅ Webhook verificado por Meta');
     res.status(200).send(challenge);
   } else {
     res.sendStatus(403);
   }
 });
 
-// POST /webhook — Recepción y registro de mensajes
+// POST /webhook — Recepcion de mensajes
 app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 
@@ -39,41 +40,89 @@ app.post('/webhook', async (req, res) => {
     if (!mensaje) return;
 
     const telefono = mensaje.from;
-    const tipo     = mensaje.type;
+    if (mensaje.type !== 'text') return;
 
-    if (tipo !== 'text') {
-      console.log(`Tipo no soportado: ${tipo} de ${telefono}`);
-      return;
-    }
+    const texto = mensaje.text.body.trim().toUpperCase();
+    console.log('Mensaje de ' + telefono + ': ' + texto);
 
-    const texto = mensaje.text.body.trim();
-    console.log(`📩 Mensaje de ${telefono}: "${texto}"`);
-
-    // Crear usuario si no existe
+    // Registrar mensaje entrante
     await pool.query(
+      'INSERT INTO interacciones (telefono, tipo_mensaje, contenido) VALUES ($1, $2, $3)',
+      [telefono, 'entrante', texto]
+    );
+
+    // Obtener o crear usuario
+    const { rows } = await pool.query(
       `INSERT INTO usuarios (telefono, ultima_sesion)
        VALUES ($1, NOW())
        ON CONFLICT (telefono) DO UPDATE
-       SET ultima_sesion = NOW()`,
+       SET ultima_sesion = NOW()
+       RETURNING *`,
       [telefono]
     );
+    const usuario = rows[0];
+    const etapa   = usuario.etapa || 'inicio';
 
-    // Registrar en bitácora de interacciones
-    await pool.query(
-      `INSERT INTO interacciones
-       (telefono, tipo_mensaje, contenido, etapa_al_momento)
-       VALUES ($1, 'entrante', $2, 'inicio')`,
-      [telefono, texto]
+    // Detectar idioma (usuario escribe KICHWA o KI para cambiar)
+    let idioma = usuario.idioma || 'es';
+    if (texto === 'KICHWA' || texto === 'KI') {
+      idioma = 'ki';
+      await pool.query('UPDATE usuarios SET idioma = $1 WHERE telefono = $2', ['ki', telefono]);
+      await require('./services/whatsapp').enviarMensaje(telefono, 'Alimi! Kichwa simipi yachachishun. 🌿\nEscribe HOLA para continuar.');
+      return;
+    }
+    if (texto === 'ESPAÑOL' || texto === 'ES') {
+      idioma = 'es';
+      await pool.query('UPDATE usuarios SET idioma = $1 WHERE telefono = $2', ['es', telefono]);
+      await require('./services/whatsapp').enviarMensaje(telefono, 'Perfecto, continuamos en espanol. 🌿\nEscribe HOLA para continuar.');
+      return;
+    }
+
+    // ── ENRUTADOR PRINCIPAL ────────────────────────────────────────
+
+    // Comando HOLA — bienvenida e inicio de diagnostico
+    if (texto === 'HOLA' || texto === 'INICIO' || texto === 'START') {
+      const bienvenida = idioma === 'ki'
+        ? '🌿 *Shamupaymi Zetesis-pi!*\n\nKaypi radiacion ambiental yachashun.\nNawpakta tapuykuna charini.\n\nEscribe *DIAGNOSTICO* kallarinkapak.'
+        : '🌿 *Bienvenido/a a Zetesis!*\n\nAqui aprenderemos sobre radiacion ambiental en la Amazonia ecuatoriana.\n\nPrimero haremos un diagnostico rapido de 8 preguntas.\n\nEscribe *DIAGNOSTICO* para comenzar.\n\n_Si prefieres en kichwa, escribe KICHWA_';
+      await require('./services/whatsapp').enviarMensaje(telefono, bienvenida);
+      return;
+    }
+
+    // Comando DIAGNOSTICO — inicia cuestionario
+    if (texto === 'DIAGNOSTICO') {
+      await iniciarDiagnostico(telefono, idioma);
+      return;
+    }
+
+    // Respuestas durante el diagnostico
+    if (etapa.startsWith('diagnostico_') && etapa !== 'diagnostico_completado') {
+      await procesarRespuestaDiagnostico(telefono, texto, etapa, idioma);
+      return;
+    }
+
+    // Diagnostico completado — iniciar leccion
+    if (etapa === 'diagnostico_completado' && texto === 'INICIAR') {
+      await require('./services/whatsapp').enviarMensaje(telefono,
+        idioma === 'ki'
+          ? 'Alimi! Yachana kallarishun. Kay parte wichwashun...'
+          : 'Perfecto! Las lecciones estaran disponibles muy pronto. Por ahora tu diagnostico fue guardado exitosamente.'
+      );
+      return;
+    }
+
+    // Mensaje no reconocido
+    await require('./services/whatsapp').enviarMensaje(telefono,
+      idioma === 'ki'
+        ? 'Mana yachanichu. *HOLA* nishpa qallariy.'
+        : 'No entendi tu mensaje. Escribe *HOLA* para comenzar.'
     );
 
-    console.log(`✅ Mensaje registrado en Supabase`);
-
   } catch (err) {
-    console.error('❌ Error:', err.message);
+    console.error('Error: ' + err.message);
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Zétesis Bot corriendo en puerto ${PORT}`);
+  console.log('Zetesis Bot corriendo en puerto ' + PORT);
 });
-
