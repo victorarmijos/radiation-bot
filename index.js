@@ -76,9 +76,4 @@ app.post('/webhook', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Zétesis Bot corriendo en puerto ${PORT}`);
 });
-```
 
----
-
-Guarda y sube a GitHub:
-```
