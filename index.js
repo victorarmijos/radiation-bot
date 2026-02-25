@@ -1,7 +1,7 @@
 // index.js — Servidor principal Zétesis Bot
 require('dotenv').config();
 const express = require('express');
-
+const pool    = require('./config/db');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
