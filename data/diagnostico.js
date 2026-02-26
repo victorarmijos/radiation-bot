@@ -9,7 +9,7 @@ const PREGUNTAS_DIAGNOSTICO = [
     id: 'DIAG_01',
     bloque: 'entorno',
     texto_es: [
-      '👋 *¡Bienvenido/a a Zétesis!*',
+      '👋 *¡Bienvenido/a!*',
       'Antes de comenzar, queremos conocerte mejor.',
       'Son solo 8 preguntas rápidas. 🌿',
       '',
@@ -23,15 +23,15 @@ const PREGUNTAS_DIAGNOSTICO = [
       'Responde con A, B o C 👇'
     ].join('\n'),
     texto_ki: [
-      '👋 *¡Shamupaymi Zétesis-pi!*',
-      'Ñawpakman, imatak kanki yachana munanchimi.',
+      '👋 *¡Alli shamupay!*',
+      'Manarak kallarishpami, kanta riksinkapak munanchik.',
       '',
-      '*Tapuy 1 de 8*',
-      '¿Maykankama yacharkankichu?',
+      '*Tapuy 2 de 8*',
+      '¿Maykankaman yacharkanki?',
       '',
-      'A) Ñawpa yachana (1-7)',
-      'B) Chawpi yachana (8-13)',
-      'C) Hatun yachana',
+      'A) Kallari yachay (1-7)',
+      'B) Chawpi yachay (8-13)',
+      'C) Hatun yachay',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -55,11 +55,11 @@ const PREGUNTAS_DIAGNOSTICO = [
     ].join('\n'),
     texto_ki: [
       '*Tapuy 2 de 8*',
-      '¿Mashna kutimi celularwan yachankichu?',
+      '¿Mashna kutintak shuk mushuk yachayta yachankapak antanikik kamuyta (celular) kanki?',
       '',
-      'A) Mana imaypipas',
-      'B) Maypipas (semana 1-2 kuti)',
-      'C) Tukuy puncha',
+      'A) Mana haykapish (manapash)',
+      'B) Maypilla (shuk ishkay kutin tantari punchapi)',
+      'C) Kutin kutin (tukuy punchakuna shinami)',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -84,11 +84,11 @@ const PREGUNTAS_DIAGNOSTICO = [
     ].join('\n'),
     texto_ki: [
       '*Tapuy 3 de 8*',
-      '¿Imatam yuyankichu yachaykunamanta?',
+      '¿Yachaymanta (ciencia), pachamamamantapash imatatak yuyanki?',
       '',
-      'A) Mana munanichu, mancharinimi',
-      'B) Alimi kan, mana allimi yachanichu',
-      'C) Munani, achkata yachana munani',
+      'A) Mana munachini, sinchimi kan',
+      'B) Sumakmi kan, shinapash mana alli hamutanichu',
+      'C) Munanimi, ashkatapash yachankapak munani',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -112,11 +112,11 @@ const PREGUNTAS_DIAGNOSTICO = [
     ].join('\n'),
     texto_ki: [
       '*Tapuy 4 de 8*',
-      '¿Pachamamamanta rimashkata uyarirkankichu?',
+      '¿Kikin ayllullaktapi mapayachishkamanta (contaminación) kawsay pachamantapash uyashkankichu?',
       '',
-      'A) Mana imaypipas',
-      'B) Uyarirkami, mana allimi yachanichu',
-      'C) Ari, ayllupi rimanchimi',
+      'A) Mana haykapish imatapash uyashkanichu',
+      'B) Ashatami uyashkani, shinapash mana ashtakata yachanichu',
+      'C) Ari, ayllullaktapi kutin kutin rimanchikmi',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -141,11 +141,11 @@ const PREGUNTAS_DIAGNOSTICO = [
     ].join('\n'),
     texto_ki: [
       '*Tapuy 5 de 8*',
-      '¿"Radiación" niskata uyarirkankichu?',
+      '¿"Radiación" shimita uyashkankichu?',
       '',
-      'A) Mana, mana imaypipas',
-      'B) Ari, mana yachanichu imami kan',
-      'C) Ari, yachaniми imami kan',
+      'A) Mana, mana haykapish',
+      'B) Ari, shinapash imami kan mana yachanichu',
+      'C) Ari, imami kan ashatami yachani',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -169,11 +169,11 @@ const PREGUNTAS_DIAGNOSTICO = [
     ].join('\n'),
     texto_ki: [
       '*Tapuy 6 de 8*',
-      '¿Imatam radiación kan ninki?',
+      '¿Radiación imatak kan yuyanki?',
       '',
-      'A) Llaki kaspillami plantas nuclearesmanta',
-      'B) Pachamama ukupi tiyak energia',
-      'C) Celular wifi señalkunalla',
+      'A) Antawayra wasikunamanta llukshik llakichikllami kan',
+      'B) Pachamama charishka, shinallatak runa rurashka ushaymi (energía) kan',
+      'C) Antanikik (celular), wifi nishka uykunallami kan',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -198,11 +198,11 @@ const PREGUNTAS_DIAGNOSTICO = [
     ].join('\n'),
     texto_ki: [
       '*Tapuy 7 de 8*',
-      '¿Ecuador Amazoníapi radiación natural tiyankichu?',
+      '¿Ecuador mamallakta Amasunikapi (Amazonía) pachamamamanta radiación tiyanchu yuyanki?',
       '',
-      'A) Mana, kaypi mana radiación kanchu',
-      'B) Mana yachanichu',
-      'C) Ari, tukuy pachapi radiación natural tiyami',
+      'A) Mana, kaypika imasami radiación mana tiyanchu',
+      'B) Mana yachanichu, mana chaymanta yuyashkanichu',
+      'C) Ari, tukuy Allpapika pachamamamanta radiación tiyanmi',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -226,12 +226,12 @@ const PREGUNTAS_DIAGNOSTICO = [
       'Responde con A, B o C 👇'
     ].join('\n'),
     texto_ki: [
-      '*Tapuy 8 de 8 — ¡Kipalla!* 🎯',
-      '¿Imatam radiación natural artificial tukuymanta chikan kan?',
+      '*Tapuy 8 de 8 — ¡Tukurimi!* 🎯',
+      '¿Pachamama radiacionwan runa rurashka radiacionwan imatak chikan kan?',
       '',
-      'A) Mana chikanchu, tukuymi llaki',
-      'B) Natural pachamamamanta, artificial runakunami ruranchi',
-      'C) Natural llaki, artificial allimi',
+      'A) Mana chikan kanchu, tukuy radiacionmi llakichik kan',
+      'B) Pachamama radiacionka Allpamanta hawa pachamantapash shamun; runa rurashkataka ñukanchikmi rurarkanchik',
+      'C) Pachamama radiacionmi llakichik kan, runa rurashkaka allimi kan',
       '',
       'A, B o C nishpa kutichiy 👇'
     ].join('\n'),
@@ -259,17 +259,18 @@ function mensajeResultado(nivel, idioma = 'es') {
         '',
         'Tu nivel de inicio es: *Explorador/a*',
         'Comenzaremos desde lo básico con explicaciones simples,',
-        'imágenes y audios en español y kichwa.',
+        'e imágenes.',
         '',
         'No te preocupes — ¡aprenderás mucho! 💪',
         '',
         'Escribe *INICIAR* para comenzar tu primera lección.'
       ].join('\n'),
       ki: [
-        '🌱 *¡Kutichishkamanta pagui!*',
+        '🌱 *Kutichishkamanta yupaychani*',
         '',
-        'Kan kanka: *Mashkak*',
-        'Ñawpakta yachachishun.',
+        'Kikinpa kallari yachayka: Maskakmi kan,',
+        'Kallarimantami, pisi pisilla rurashun, shuyukunawanpash alli hamutankapak',
+        'Ama llakikuychu — ¡ashkatami yachakunki! 💪',
         '',
         'Escribe *INICIAR* yachana kallarinkapak.'
       ].join('\n')
@@ -287,8 +288,9 @@ function mensajeResultado(nivel, idioma = 'es') {
       ki: [
         '🌿 *¡Allimi!*',
         '',
-        'Kan kanka: *Maskak*',
-        'Yachaykunata charinkiми.',
+        'Kikinpa kallari yachayka: Taripukmi kan.',
+        'Ñami ashataka yachanki. Ashtawan utka rishun,',
+        'minishtishka yachaykunatapash ashtawan riksishun.',
         '',
         'Escribe *INICIAR* yachana kallarinkapak.'
       ].join('\n')
@@ -304,10 +306,11 @@ function mensajeResultado(nivel, idioma = 'es') {
         'Escribe *INICIAR* para comenzar tu primera lección.'
       ].join('\n'),
       ki: [
-        '🏆 *¡Sumakmi!*',
+        '🏆 *¡Ashtawan allimi!*',
         '',
-        'Kan kanka: *Yachak*',
-        'Allimi yachankiми.',
+        'Kikinpa kallari yachayka: Ayllullakta Yachayukmi kan',
+        'Alli yachaykunatami charinki. Ashtawan sinchi',
+        'yachaykunata, ruranakunatapash kunchikmi.',
         '',
         'Escribe *INICIAR* yachana kallarinkapak.'
       ].join('\n')
