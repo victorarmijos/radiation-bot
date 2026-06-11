@@ -84,7 +84,7 @@ const recibirMensaje = async (req, res) => {
             }
 
 
-            // 
+            // --- EL DIRECTOR DE ORQUESTA (Enrutador) ---
             
             // 1. Captura del Nombre
             if (etapaActual === 'recurso_esperando_nombre') {
@@ -92,4 +92,73 @@ const recibirMensaje = async (req, res) => {
                     await enviarMensaje(numeroUsuario, "Por favor escribe tu nombre válido, ej: *Rosa* o *Juan*");
                     return res.sendStatus(200);
                 }
-                // 
+                const nombreFormateado = textoMensaje.charAt(0).toUpperCase() + textoMensaje.slice(1);
+                
+                await db.query(
+                    "UPDATE usuarios SET nombre = $1, etapa = 'recurso_esperando_edad' WHERE telefono = $2", 
+                    [nombreFormateado, numeroUsuario]
+                );
+                await enviarMensaje(numeroUsuario, `¡Mucho gusto, *${nombreFormateado}*! 👋\n\n¿Cuántos años tienes?\nEscribe solo el número. Ej: *34*`);
+                return res.sendStatus(200);
+            }
+
+            // 2. Captura de la Edad y Salto a los Niveles
+            else if (etapaActual === 'recurso_esperando_edad') {
+                const edadNum = parseInt(textoMensaje);
+                if (isNaN(edadNum) || edadNum < 10 || edadNum > 100) {
+                    await enviarMensaje(numeroUsuario, "⚠️ Por favor escribe solo tu edad en números. Ej: *34*");
+                    return res.sendStatus(200);
+                }
+                
+                await db.query(
+                    "UPDATE usuarios SET edad = $1, etapa = 'diagnostico_completado' WHERE telefono = $2", 
+                    [edadNum, numeroUsuario]
+                );
+                
+                await iniciarNivel(numeroUsuario, 'capibara', 'es', process.env.BASE_URL || 'https://radiation-bot.onrender.com');
+                return res.sendStatus(200);
+            }
+
+            // 3. Fase de Diagnóstico
+            else if (etapaActual.startsWith('esperando_') || etapaActual.startsWith('diagnostico_')) {
+                await procesarRespuestaDiagnostico(numeroUsuario, textoMensaje, etapaActual);
+            }
+            
+            // 4. Continuar niveles
+            else if (etapaActual === 'diagnostico_completado') {
+                await iniciarNivel(numeroUsuario, 'capibara', 'es', process.env.BASE_URL || 'https://radiation-bot.onrender.com');
+            }
+
+            // 5. Fase de Enseñanza (Niveles Capibara -> Jaguar)
+            else if (etapaActual.startsWith('nivel') || etapaActual.includes('quiz')) {
+                await procesarNivel(numeroUsuario, textoMensaje, etapaActual, 'es', process.env.BASE_URL);
+            }
+
+            // 6. Transición al Post-Test
+            else if (etapaActual === 'programa_completado') {
+                if (textoMensaje === 'posttest') {
+                     await iniciarPosttest(numeroUsuario);
+                }
+            }
+
+            // 7. Fase Final (Ganancia de Hake)
+            else if (etapaActual.startsWith('posttest_')) {
+                await procesarRespuestaPosttest(numeroUsuario, textoMensaje, etapaActual);
+            }
+
+            // 8. Fallback o Finalizado
+            else {
+               await db.query(
+                    'INSERT INTO interacciones (telefono, tipo_mensaje, mensaje_usuario, etapa_al_momento) VALUES ($1, $2, $3, $4)',
+                    [numeroUsuario, 'fallback', textoMensaje, etapaActual]
+                );
+            }
+        }
+        res.sendStatus(200);
+    } catch (error) {
+        console.error("Error crítico en botController:", error);
+        res.sendStatus(500);
+    }
+};
+
+module.exports = { recibirMensaje };
