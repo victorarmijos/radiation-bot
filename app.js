@@ -1,10 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path'); // <-- AÑADIDO: Módulo nativo para manejar rutas de carpetas
 const apiRoutes = require('./pacayacu-bot/routes/apiRoutes');
 
 const app = express();
 app.use(bodyParser.json());
+
+// <-- AÑADIDO: Configuración maestra de archivos estáticos
+// Esto le dice a Render que exponga públicamente todo lo que está en 'pacayacu-bot/public'
+app.use(express.static(path.join(__dirname, 'pacayacu-bot', 'public')));
 
 // Conectar las rutas
 app.use('/api', apiRoutes);
