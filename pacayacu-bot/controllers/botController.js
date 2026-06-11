@@ -1,6 +1,6 @@
 const { iniciarDiagnostico, procesarRespuestaDiagnostico } = require('./diagnosticoController');
 const { iniciarNivel, procesarNivel, mostrarPuntaje } = require('./nivelesController');
-const { iniciarPosttest, procesarRespuestaPosttest } = require('./controllers/posttestController'); // Asegúrate de que la ruta sea correcta según tu proyecto
+const { iniciarPosttest, procesarRespuestaPosttest } = require('./posttestController');
 const db = require('../config/db');
 
 const { enviarMensaje, enviarBotones } = require('../services/whatsapp'); 
