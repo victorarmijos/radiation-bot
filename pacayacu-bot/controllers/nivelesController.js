@@ -4,6 +4,7 @@
 const pool = require('../config/db');
 const { enviarMensaje, enviarBotones, enviarImagenConBotones, esperar } = require('../services/whatsapp');
 const { NIVELES, ETAPA_A_NIVEL } = require('../data/niveles');
+const esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ─── INICIAR UN NIVEL ─────────────
 async function iniciarNivel(telefono, nivelId, idioma, baseUrl) {
@@ -202,23 +203,34 @@ async function completarNivel(telefono, nivel, idioma, baseUrl) {
      ON CONFLICT (telefono, modulo_id) DO UPDATE
      SET completado = true, puntaje = 10`,
     [telefono, 'nivel_' + nivel.numero]
-  ).catch(() => {}); // Si la tabla no tiene unique constraint, ignorar
+  ).catch(() => {});
 
-  // Esperar un momento y enviar insignia
-  setTimeout(async () => {
-    // Si hay siguiente nivel
-    if (nivel.siguiente_nivel) {
-      const imageUrl = `${baseUrl}/images/${nivel.id}.jpg`;
-      await enviarImagenConBotones(telefono, imageUrl, nivel.insignia, [{ id: 'SIGUIENTE', title: 'Siguiente Nivel' }]);
+  // Usamos el 'esperar' que acabamos de definir
+  await esperar(1500); 
 
-    // Si es el ultimo nivel -> insignia del último nivel y luego certificado
-    } else {
-      const imageUrl = `${baseUrl}/images/${nivel.id}.jpg`;
-      await enviarImagenConBotones(telefono, imageUrl, nivel.insignia, [{ id: 'CERTIFICADO', title: 'Ver Certificado' }]);
-    }
-  }, 1500);
+  // --- ARREGLO DE LA IMAGEN ---
+  // Nos aseguramos de que baseUrl no tenga una barra / al final para evitar url//images
+  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const imageUrl = `${cleanBaseUrl}/images/${nivel.id}.jpg`;
+  
+  console.log("Intentando enviar imagen:", imageUrl); // Para ver la url en los logs
+
+  try {
+      if (nivel.siguiente_nivel) {
+        await enviarImagenConBotones(telefono, imageUrl, nivel.insignia, [{ id: 'SIGUIENTE', title: 'Siguiente Nivel' }]);
+      } else {
+        await enviarImagenConBotones(telefono, imageUrl, nivel.insignia, [{ id: 'CERTIFICADO', title: 'Ver Certificado' }]);
+      }
+  } catch (err) {
+      console.error("Error al enviar la imagen:", err);
+      // Fallback: Si la imagen falla, enviamos el texto solo con los botones para que el bot no se congele
+      const fallbackBotones = nivel.siguiente_nivel 
+          ? [{ id: 'SIGUIENTE', title: 'Siguiente Nivel' }] 
+          : [{ id: 'CERTIFICADO', title: 'Ver Certificado' }];
+          
+      await enviarBotones(telefono, `[Insignia Desbloqueada]\n\n${nivel.insignia}`, fallbackBotones);
+  }
 }
-
 // ─── FINALIZAR EL PROGRAMA — NIVEL 4 COMPLETADO ───────────────────────────
 async function finalizarPrograma(telefono, idioma) {
   const certificado = [

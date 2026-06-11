@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const pool = require('./config/db');
+const path = require('path');
 
 const { iniciarDiagnostico, guardarNombreIniciarPreguntas, guardarEdadPedirCiudad, guardarLocalidadIniciarPreguntas, procesarRespuestaDiagnostico } = require('./controllers/diagnosticoController');
 const { iniciarNivel, procesarNivel, avanzarSiguienteNivel, mostrarPuntaje } = require('./controllers/nivelesController');
@@ -58,7 +59,7 @@ function buscarComandoSimilar(texto, comandos, tolerancia = 2) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ─── CONSTANTES PARA DEBUG ───────────────────────────────────────────────────
 const DEBUG_TELEFONO = process.env.DEBUG_TELEFONO || ''; // Tu número para debug
