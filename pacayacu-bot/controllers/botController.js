@@ -1,5 +1,5 @@
 const { iniciarDiagnostico, procesarRespuestaDiagnostico } = require('./diagnosticoController');
-const { iniciarNivel, procesarNivel, mostrarPuntaje, avanzarSiguienteNivel } = require('./nivelesController');
+const { iniciarNivel, procesarNivel, mostrarPuntaje, avanzarSiguienteNivel, finalizarPrograma } = require('./nivelesController');
 const { iniciarPosttest, procesarRespuestaPosttest } = require('./posttestController');
 const db = require('../config/db');
 
