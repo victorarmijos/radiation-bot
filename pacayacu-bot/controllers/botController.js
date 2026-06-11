@@ -3,7 +3,8 @@ const { iniciarNivel, procesarNivel, mostrarPuntaje } = require('./nivelesContro
 const { iniciarPosttest, procesarRespuestaPosttest } = require('./posttestController');
 const db = require('../config/db');
 
-// Variables configurables (Si quieres, puedes poner tu número real aquí para probar todo el flujo sin filtros)
+const { enviarMensaje, enviarBotones } = require('../services/whatsapp'); 
+
 const MODO_PRUEBA = false; 
 const NUMEROS_ADMIN = ['393514770998']; 
 
@@ -16,72 +17,79 @@ const recibirMensaje = async (req, res) => {
 
         if (message) {
             const numeroUsuario = message.from;
-            const textoMensaje = message.text?.body.toLowerCase().trim() || "";
+            
+            // Lector de texto y botones
+            let textoMensaje = "";
+            if (message.type === 'text') {
+                textoMensaje = message.text.body.toLowerCase().trim();
+            } else if (message.type === 'interactive') {
+                textoMensaje = message.interactive.button_reply.id.toLowerCase().trim();
+            }
 
             // --- LÓGICA DE USUARIOS ---
             let usuarioResult = await db.query('SELECT * FROM usuarios WHERE telefono = $1', [numeroUsuario]);
             
             if (usuarioResult.rows.length === 0) {
-                // Nuevo usuario: Inicia en el diagnóstico
-                await db.query('INSERT INTO usuarios (telefono, etapa) VALUES ($1, $2)', [numeroUsuario, 'inicio']);
-                await iniciarDiagnostico(numeroUsuario);
+                // Nuevo usuario: Da la bienvenida y pide el nombre primero
+                await db.query(
+                    "INSERT INTO usuarios (telefono, etapa) VALUES ($1, 'recurso_esperando_nombre')", 
+                    [numeroUsuario]
+                );
+                await enviarMensaje(
+                    numeroUsuario, 
+                    "🌿 *¡Bienvenido/a a Zétesis!*\n\nPara que la experiencia sea más personalizada, ¿cuál es tu nombre?\nEscríbelo como prefieres que te llamemos (Ej: *Rosa* o *Juan Carlos*)."
+                );
                 return res.sendStatus(200);
             }
 
             const usuario = usuarioResult.rows[0];
             const etapaActual = usuario.etapa;
 
-            // --- EL DIRECTOR DE ORQUESTA (Enrutador) ---
-            
-            // 1. Fase de Diagnóstico Inicial
-            if (etapaActual.startsWith('esperando_') || etapaActual.startsWith('diagnostico_')) {
-                // Si la función requiere más parámetros según diagnosticoController.js, asegúrate de importarlas y usarlas aquí. 
-                // Por ahora, asumimos que procesarRespuestaDiagnostico maneja las respuestas A/B/C
-                await procesarRespuestaDiagnostico(numeroUsuario, textoMensaje, etapaActual);
-            }
-            
-            // 2. Transición del Diagnóstico a los Niveles
-            else if (etapaActual === 'diagnostico_completado') {
-                await iniciarNivel(numeroUsuario, 'capibara', 'es', process.env.BASE_URL || 'https://radiation-bot.onrender.com');
-            }
+            // --- COMANDOS GLOBALES ---
 
-            // 3. Fase de Enseñanza (Niveles Capibara -> Jaguar)
-            else if (etapaActual.startsWith('nivel') || etapaActual.includes('quiz')) {
-                await procesarNivel(numeroUsuario, textoMensaje, etapaActual, 'es', process.env.BASE_URL);
-            }
-
-            // 4. Transición al Post-Test
-            else if (etapaActual === 'programa_completado') {
-                if (textoMensaje === 'posttest') {
-                     await iniciarPosttest(numeroUsuario);
-                }
-            }
-
-            // 5. Fase Final (Ganancia de Hake)
-            else if (etapaActual.startsWith('posttest_')) {
-                await procesarRespuestaPosttest(numeroUsuario, textoMensaje, etapaActual);
-            }
-
-            // 6. Comandos Generales (En cualquier momento)
-            else if (textoMensaje === 'puntaje' || textoMensaje === 'progreso') {
-                 await mostrarPuntaje(numeroUsuario);
-            }
-
-            // 7. Fallback o Finalizado
-            else {
-               // En este punto, el usuario ya terminó todo el proceso de Zétesis
-               // Se podría guardar el mensaje en interacciones con un tipo 'fallback' si es necesario.
-               await db.query(
-                    'INSERT INTO interacciones (telefono, tipo_mensaje, mensaje_usuario, etapa_al_momento) VALUES ($1, $2, $3, $4)',
-                    [numeroUsuario, 'fallback', textoMensaje, etapaActual]
+            if (textoMensaje === 'reiniciar') {
+                // Reiniciar manda a pedir el nombre nuevamente
+                await db.query(
+                    "UPDATE usuarios SET etapa = 'recurso_esperando_nombre', puntos = 0, nivel = NULL, nombre = NULL, edad = NULL, localidad = NULL WHERE telefono = $1", 
+                    [numeroUsuario]
                 );
+                await enviarMensaje(
+                    numeroUsuario, 
+                    "🔄 *Progreso reiniciado.*\n\n🌿 *¡Bienvenido/a de nuevo!*\n\n¿Cuál es tu nombre?\nEscríbelo como prefieres que te llamemos."
+                );
+                return res.sendStatus(200); 
             }
-        }
-        res.sendStatus(200);
-    } catch (error) {
-        console.error("Error crítico en botController:", error);
-        res.sendStatus(500);
-    }
-};
 
-module.exports = { recibirMensaje };
+            if (textoMensaje === 'diagnostico') {
+                await db.query(
+                    "UPDATE usuarios SET etapa = 'inicio', puntos = 0, nivel = NULL WHERE telefono = $1", 
+                    [numeroUsuario]
+                );
+                await iniciarDiagnostico(numeroUsuario);
+                return res.sendStatus(200); 
+            }
+
+            if (textoMensaje === 'ayuda') {
+                await enviarBotones(numeroUsuario, "Aquí tienes los comandos disponibles:", [
+                    { id: 'REINICIAR', title: 'Reiniciar Todo' },
+                    { id: 'DIAGNOSTICO', title: 'Test Diagnóstico' },
+                    { id: 'PUNTAJE', title: 'Ver puntaje' } 
+                ]);
+                return res.sendStatus(200); 
+            }
+
+            if (textoMensaje === 'puntaje' || textoMensaje === 'progreso') {
+                 await mostrarPuntaje(numeroUsuario);
+                 return res.sendStatus(200); 
+            }
+
+
+            // 
+            
+            // 1. Captura del Nombre
+            if (etapaActual === 'recurso_esperando_nombre') {
+                if (textoMensaje.length < 2) {
+                    await enviarMensaje(numeroUsuario, "Por favor escribe tu nombre válido, ej: *Rosa* o *Juan*");
+                    return res.sendStatus(200);
+                }
+                // 
