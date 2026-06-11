@@ -1,6 +1,6 @@
 const { iniciarDiagnostico, procesarRespuestaDiagnostico } = require('./diagnosticoController');
 const { iniciarNivel, procesarNivel, mostrarPuntaje } = require('./nivelesController');
-const { iniciarPosttest, procesarRespuestaPosttest } = require('./posttestController');
+const { iniciarPosttest, procesarRespuestaPosttest } = require('./controllers/posttestController'); // Asegúrate de que la ruta sea correcta según tu proyecto
 const db = require('../config/db');
 
 const { enviarMensaje, enviarBotones } = require('../services/whatsapp'); 
@@ -18,6 +18,9 @@ const recibirMensaje = async (req, res) => {
         if (message) {
             const numeroUsuario = message.from;
             
+            // ─── SOLUCIÓN AQUÍ: Definimos baseUrl para todo el enrutador ───
+            const baseUrl = 'https://' + req.get('host');
+
             // Lector de texto y botones
             let textoMensaje = "";
             if (message.type === 'text') {
@@ -48,7 +51,6 @@ const recibirMensaje = async (req, res) => {
             // --- COMANDOS GLOBALES ---
 
             if (textoMensaje === 'reiniciar') {
-                // Reiniciar manda a pedir el nombre nuevamente
                 await db.query(
                     "UPDATE usuarios SET etapa = 'recurso_esperando_nombre', puntos = 0, nivel = NULL, nombre = NULL, edad = NULL, localidad = NULL WHERE telefono = $1", 
                     [numeroUsuario]
@@ -83,8 +85,7 @@ const recibirMensaje = async (req, res) => {
                  return res.sendStatus(200); 
             }
 
-
-            // (Enrutador) ---
+            // --- ENRUTADOR PRINCIPAL ---
             
             // 1. Captura del Nombre
             if (etapaActual === 'recurso_esperando_nombre') {
@@ -115,7 +116,7 @@ const recibirMensaje = async (req, res) => {
                     [edadNum, numeroUsuario]
                 );
                 
-                // Usamos la variable baseUrl que definimos arriba
+                // Ahora baseUrl tiene el valor correcto y no colapsará
                 await iniciarNivel(numeroUsuario, 'capibara', 'es', baseUrl);
                 return res.sendStatus(200);
             }
