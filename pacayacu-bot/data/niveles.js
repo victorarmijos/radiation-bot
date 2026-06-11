@@ -5,8 +5,7 @@ const LINK_CONTENIDO_ADICIONAL = 'https://radiation-bot.onrender.com/recursos';
 
 const NIVELES = {
 
-  // ══════════════════════════════════════
-  // NIVEL 1 — CAPIBARA — Correcta: C
+ // NIVEL 1 — CAPIBARA — Correcta: C
   // ══════════════════════════════════════
   capibara: {
     id: 'capibara', numero: 1, animal: 'Capibara',
@@ -16,17 +15,17 @@ const NIVELES = {
     mensajes: {
       nivel1_msg1: {
         texto: [
-          '🦫 *Hola, soy Capi tu primer guía.*',
+          '🦫 *Hola, soy Capi, tu primer guía.*',
           '',
-          'La palabra "radiación" asusta,',
-          'pero es simplemente *energía que viaja por el espacio* en forma de ondas o partículas.',
+          'La palabra "radiación" suele asustar, pero es simplemente *energía viajando por el espacio* como ondas o partículas.',
           '',
-          'Existen dos tipos:',
-          '📶 *No ionizante*: Radiación de baja energía. Cuando entra en contacto con la materia, provoca principalmente calor o vibraciones. Ejemplos: Luz visible, Wi-Fi, radio, microondas, etc. ¡Sin ella no hay tecnología de comunicación inalámbrica!.',
+          'Para entenderla, la dividimos en el espectro electromagnético:',
           '',
-          '⚡ *Ionizante:* Tiene mucha energía y requiere cuidado. Aquí entran los rayos X y la radiación gamma (que es muy penetrante) capaz de arrancar los electrones de los átomos y moléculas. ',
+          '📶 *No ionizante (Baja energía):* Solo genera calor o vibración. No altera la materia. Ej: Luz visible, Wi-Fi y ondas de radio.',
           '',
-          'Convivimos con ambas desde el comienzo del Universo.'
+          '⚡ *Ionizante (Alta energía):* Tiene la fuerza suficiente para arrancar electrones de los átomos y alterar moléculas. Ej: Rayos X y radiación gamma.',
+          '',
+          '¡Convivimos con ambas de forma natural desde el origen del Universo!'
         ].join('\n'),
         siguiente: 'nivel1_msg2'
       },
@@ -98,7 +97,7 @@ const NIVELES = {
     ].join('\n')
   },
 
-  // ══════════════════════════════════════
+// ══════════════════════════════════════
   // NIVEL 2 — GUACAMAYO — Correcta: A
   // ══════════════════════════════════════
   guacamayo: {
@@ -110,19 +109,17 @@ const NIVELES = {
       nivel2_msg1: {
         texto: [
           '🦜 *¡Hola! Soy Guaca.*',
-          'Volaremos sobre los mitos.',
+          'Volaremos sobre la selva para entender de dónde viene la radiación.',
           '',
-          '¿Sabías que a nuestro alrededor existe radiación que no se puede ver?, Esto es lo que llamamos el fondo radiactivo natural.',
-          'Pero, *¿Toda la radiación viene de la naturaleza?* 🤔',
-          '¡No! Algunas fuentes de radiación son naturales, pero otras son creadas por el ser humano. Por ejemplo, la radioterapia que se usa en hospitales para tratar el cáncer utiliza radiación producida con tecnología especial. 🏥⚛️',
-          'También hay fuentes de radiación en el entorno son naturales, pero que pueden ser concentradas, como los tubos de los pozos petroleros.',
-          'Y eso es lo que nos preocupe en Pacayacu.',
-          'Hay dos formas de exponerse al TENORM:',
+          'Constantemente recibimos radiación inofensiva del sol y del suelo. Esto es el *fondo radiactivo natural*.',
           '',
-          '1️⃣ *Externa* — la energía viaja por el aire.',
-          '2️⃣ *Interna* — partículas entran al cuerpo.',
+          'Sin embargo, en zonas como Pacayacu, la industria petrolera extrae minerales profundos que concentran esta radiación natural en la superficie (por ejemplo, en las tuberías). A esto lo llamamos *TENORM*. 🛢️⚛️',
           '',
-          'Son distintas y se previenen distinto.'
+          'Podemos exponernos al TENORM de dos formas:',
+          '1️⃣ *Externa:* La radiación te alcanza a distancia (como el calor de una fogata).',
+          '2️⃣ *Interna:* Respiras o ingieres partículas radiactivas (como polvo o agua contaminada).',
+          '',
+          'Saber diferenciarlas es el primer paso para protegernos.'
         ].join('\n'),
         siguiente: 'nivel2_msg2'
       },
@@ -185,7 +182,7 @@ const NIVELES = {
     ].join('\n')
   },
 
-  // ══════════════════════════════════════
+// ══════════════════════════════════════
   // NIVEL 3 — ANACONDA — Correcta: B
   // ══════════════════════════════════════
   anaconda: {
@@ -196,23 +193,22 @@ const NIVELES = {
     mensajes: {
       nivel3_msg1: {
         texto: [
-          '🐍 Ssss... Soy Ana. Ha llegado el momento de hablar de cómo medimos la radiación cuando ingresa al cuerpo (contaminación interna) o nos expone desde afuera (irradiación externa)',
-          'Todo se puede medir, también la radiación.',
+          '🐍 *Ssss... Soy Ana.* Es momento de hablar de dosimetría.',
           '',
-          'Existen dos formas de medirla que no debes confundir:',
-          '📏 *Actividad (Bq)*: Medimos la radiación que emite el material radiactivo en Becquerelios', 
-          '🩺 *Afectación biológica (mSv)*: Medimos el efecto biológico o el daño como consecuencia de esa radiación en nuestro cuerpo en milisieverts..',
+          'Para medir la radiación y su impacto sin caer en confusiones, diferenciamos dos magnitudes físicas:',
           '',
-          'Para que te ubiques:',
+          '📏 *Actividad (Becquerel - Bq):* Mide cuánta radiación *emite* un material (la fuente).',
+          '🩺 *Dosis Efectiva (milisievert - mSv):* Mide el *impacto biológico* de la radiación cuando es absorbida por el cuerpo.',
           '',
-          '🍌 Comer un plátano → 0.0001 mSv, eso no significa que sea peligroso',
-          '✈️ Vuelo Quito-Madrid → 0.08 mSv, puedes volar sin miedo',
-          '🩻 Radiografía médica → 0.1 mSv, es una dosis controlada',
-          '🌎 Dosis efectiva global → 1 mSv/año, dosis máxima anual recomendada',
-          '🩺 Tomografía (CT scan) →  1-10mSv, dosis controlada con beneficio claro',
+          'Todo es cuestión de dosis. Para poner los milisieverts (mSv) en perspectiva:',
           '',
-          'Cuando sabemos la medida exacta, podemos decidir sin pánico.',
+          '🍌 Comer un plátano → 0.0001 mSv (Inofensivo)',
+          '✈️ Vuelo internacional → 0.08 mSv',
+          '🩻 Radiografía médica → 0.1 mSv (Dosis controlada)',
+          '🌎 Límite para el público general → 1 mSv/año',
+          '🩺 Tomografía computarizada → 1 a 10 mSv (Beneficio justificado)',
           '',
+          'El conocimiento dosimétrico nos permite evaluar riesgos con evidencia matemática, alejándonos tanto de la negación como del pánico.'
         ].join('\n'),
         siguiente: 'nivel3_msg2'
       },

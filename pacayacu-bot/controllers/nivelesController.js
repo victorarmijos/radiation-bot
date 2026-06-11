@@ -39,14 +39,8 @@ async function iniciarNivel(telefono, nivelId, idioma, baseUrl) {
   const botonId = esUltimoMensaje ? 'QUIZ' : 'SIGUIENTE';
   const botonTitle = esUltimoMensaje ? 'Ir al Quiz' : 'Siguiente';
 
-  // Enviamos la teoría primero
-  await enviarMensaje(telefono, intro + textoMsg);
-  
-  // Pausamos 1 segundo
-  await esperar(1000);
-  
-  // Enviamos el botón
-  await enviarBotones(telefono, "¿Qué deseas hacer ahora?", [{ id: botonId, title: botonTitle }]);
+  // --- MODIFICACIÓN: Enviamos todo en un solo bloque ---
+  await enviarBotones(telefono, intro + textoMsg, [{ id: botonId, title: botonTitle }]);
 }
 
 
@@ -91,18 +85,10 @@ async function procesarNivel(telefono, texto, etapaActual, idioma, baseUrl) {
       const botonId = esUltimo ? 'QUIZ' : 'SIGUIENTE';
       const botonTitle = esUltimo ? 'Ir al Quiz' : 'Siguiente';
 
-      // Enviamos la lección
-      await enviarMensaje(telefono, nextMsg.texto);
-      
-      // Pausa de 1 segundo
-      await esperar(1000);
-
-      // Enviamos el botón
-      await enviarBotones(telefono, "Presiona para avanzar:", [{ id: botonId, title: botonTitle }]);
+      // --- MODIFICACIÓN: Enviamos la teoría y el botón juntos ---
+      await enviarBotones(telefono, nextMsg.texto, [{ id: botonId, title: botonTitle }]);
       return true;
     }
-
-    return false;
   }
 
   // ── Comando QUIZ — ir al quiz directamente desde ultimo mensaje ──
@@ -234,26 +220,29 @@ async function completarNivel(telefono, nivel, idioma, baseUrl) {
   }
 }
 // ─── FINALIZAR EL PROGRAMA — NIVEL 4 COMPLETADO ───────────────────────────
-async function finalizarPrograma(telefono, idioma) {
+async function finalizarPrograma(telefono, idioma, baseUrl) {
+  // 1. Obtenemos el nombre del usuario desde la base de datos
+  const { rows } = await pool.query('SELECT nombre FROM usuarios WHERE telefono = $1', [telefono]);
+  const nombreUsuario = (rows.length > 0 && rows[0].nombre) ? rows[0].nombre : 'Participante';
+
+  // 2. Armamos el certificado incluyendo el nombre
   const certificado = [
-    '*CERTIFICADO DE GUARDIAN JAGUAR*',
+    '🏆 *CERTIFICADO DE GUARDIAN JAGUAR*',
+    '━━━━━━━━━━━━━━━━━━━━━━━',
     '',
-    'Este certificado reconoce que',
-    telefono,
+    'Este certificado reconoce que:',
+    `*${nombreUsuario}*`,
     'ha completado el programa de',
-    '*Alfabetizacion en Salud Ambiental*',
-    'sobre Radiacion en Zonas Petroleras',
-    'de Pacayacu, Sucumbios, Ecuador.',
+    '*Alfabetización en Salud Ambiental*',
+    'sobre Radiación en la Amazonía Ecuatoriana.',
     '',
-    'N1 Capibara:  Reconocimiento del entorno',
-    'N2 Guacamayo: Vias de exposicion',
-    'N3 Anaconda:  Trilogia ALARA',
-    'N4 Jaguar:    Liderazgo comunitario',
+    '🌿 N1 Capibara  — Espectro electromagnético y tipos de radiación',
+    '🦜 N2 Guacamayo — Radiación natural vs. TENORM',
+    '🐍 N3 Anaconda  — Vías de exposición y dosimetría (mSv)',
+    '🐆 N4 Jaguar    — Protocolos de acción y ciencia ciudadana',
+    '━━━━━━━━━━━━━━━━━━━━━━━',
     '',
-    'Comparte este mensaje con tu comunidad.',
-    'Cada persona informada es un guardian mas.',
-    '',
-    'Escribe *POSTTEST* para el test de evaluacion final.'
+    'Selecciona *POSTTEST* para la evaluación final y ver tus resultados.'
   ].join('\n');
 
   await pool.query(
@@ -261,7 +250,17 @@ async function finalizarPrograma(telefono, idioma) {
     ['programa_completado', telefono]
   );
 
-  await enviarBotones(telefono, certificado, [{ id: 'POSTTEST', title: 'Post-Test' }]);
+  // 3. Enviamos la imagen con el texto del certificado y el botón
+  const cleanBaseUrl = baseUrl && baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : (baseUrl || 'https://radiation-bot.onrender.com');
+  const imageUrl = `${cleanBaseUrl}/images/certificado.jpg`;
+
+  try {
+      await enviarImagenConBotones(telefono, imageUrl, certificado, [{ id: 'POSTTEST', title: 'Ir al Post-Test' }]);
+  } catch (err) {
+      console.error("Error enviando certificado:", err);
+      // Fallback por si la imagen falla
+      await enviarBotones(telefono, certificado, [{ id: 'POSTTEST', title: 'Ir al Post-Test' }]);
+  }
 }
 
 // ─── AVANZAR AL SIGUIENTE NIVEL (comando SIGUIENTE despues de insignia) ────
