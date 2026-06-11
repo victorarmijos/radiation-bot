@@ -2,7 +2,7 @@
 // Capibara -> Guacamayo -> Anaconda -> Jaguar
 
 const pool = require('../config/db');
-const { enviarMensaje, enviarBotones, enviarImagenConBotones } = require('../services/whatsapp');
+const { enviarMensaje, enviarBotones, enviarImagenConBotones, esperar } = require('../services/whatsapp');
 const { NIVELES, ETAPA_A_NIVEL } = require('../data/niveles');
 
 // ─── INICIAR UN NIVEL ─────────────
@@ -36,8 +36,16 @@ async function iniciarNivel(telefono, nivelId, idioma, baseUrl) {
   const botonId = esUltimoMensaje ? 'QUIZ' : 'SIGUIENTE';
   const botonTitle = esUltimoMensaje ? 'Ir al Quiz' : 'Siguiente';
 
-  await enviarBotones(telefono, intro + textoMsg, [{ id: botonId, title: botonTitle }]);
+  // Enviamos la teoría primero
+  await enviarMensaje(telefono, intro + textoMsg);
+  
+  // Pausamos 1 segundo
+  await esperar(1000);
+  
+  // Enviamos el botón
+  await enviarBotones(telefono, "¿Qué deseas hacer ahora?", [{ id: botonId, title: botonTitle }]);
 }
+
 
 // ─── PROCESAR MENSAJE DURANTE UN NIVEL ────────────────────────────────────
 async function procesarNivel(telefono, texto, etapaActual, idioma, baseUrl) {
@@ -80,7 +88,14 @@ async function procesarNivel(telefono, texto, etapaActual, idioma, baseUrl) {
       const botonId = esUltimo ? 'QUIZ' : 'SIGUIENTE';
       const botonTitle = esUltimo ? 'Ir al Quiz' : 'Siguiente';
 
-      await enviarBotones(telefono, nextMsg.texto, [{ id: botonId, title: botonTitle }]);
+      // Enviamos la lección
+      await enviarMensaje(telefono, nextMsg.texto);
+      
+      // Pausa de 1 segundo
+      await esperar(1000);
+
+      // Enviamos el botón
+      await enviarBotones(telefono, "Presiona para avanzar:", [{ id: botonId, title: botonTitle }]);
       return true;
     }
 
