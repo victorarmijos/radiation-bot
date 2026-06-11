@@ -1,9 +1,11 @@
-// controllers/nivelesController.js — Flujo de ensenanza 
+// controllers/nivelesController.js — Flujo de enseñanza 
 // Capibara -> Guacamayo -> Anaconda -> Jaguar
 
 const pool = require('../config/db');
-const { enviarMensaje, enviarBotones, enviarImagenConBotones, esperar } = require('../services/whatsapp');
+const { enviarMensaje, enviarBotones, enviarImagenConBotones } = require('../services/whatsapp'); // Quitamos 'esperar' de aquí
 const { NIVELES, ETAPA_A_NIVEL } = require('../data/niveles');
+
+// Creamos la función esperar una sola vez
 const esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ─── INICIAR UN NIVEL ─────────────
