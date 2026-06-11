@@ -84,7 +84,7 @@ const recibirMensaje = async (req, res) => {
             }
 
 
-            // --- EL DIRECTOR DE ORQUESTA (Enrutador) ---
+            // (Enrutador) ---
             
             // 1. Captura del Nombre
             if (etapaActual === 'recurso_esperando_nombre') {
@@ -115,7 +115,8 @@ const recibirMensaje = async (req, res) => {
                     [edadNum, numeroUsuario]
                 );
                 
-                await iniciarNivel(numeroUsuario, 'capibara', 'es', process.env.BASE_URL || 'https://radiation-bot.onrender.com');
+                // Usamos la variable baseUrl que definimos arriba
+                await iniciarNivel(numeroUsuario, 'capibara', 'es', baseUrl);
                 return res.sendStatus(200);
             }
 
@@ -126,12 +127,12 @@ const recibirMensaje = async (req, res) => {
             
             // 4. Continuar niveles
             else if (etapaActual === 'diagnostico_completado') {
-                await iniciarNivel(numeroUsuario, 'capibara', 'es', process.env.BASE_URL || 'https://radiation-bot.onrender.com');
+                await iniciarNivel(numeroUsuario, 'capibara', 'es', baseUrl);
             }
 
             // 5. Fase de Enseñanza (Niveles Capibara -> Jaguar)
             else if (etapaActual.startsWith('nivel') || etapaActual.includes('quiz')) {
-                await procesarNivel(numeroUsuario, textoMensaje, etapaActual, 'es', process.env.BASE_URL);
+                await procesarNivel(numeroUsuario, textoMensaje, etapaActual, 'es', baseUrl);
             }
 
             // 6. Transición al Post-Test
