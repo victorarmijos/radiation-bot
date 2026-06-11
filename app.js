@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const apiRoutes = require('./src/routes/apiRoutes');
+const apiRoutes = require('./pacayacu-bot/routes/apiRoutes');
 
 const app = express();
 app.use(bodyParser.json());
