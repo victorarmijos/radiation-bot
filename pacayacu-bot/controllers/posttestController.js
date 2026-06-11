@@ -164,24 +164,7 @@ async function finalizarPosttest(telefono, idioma = 'es') {
   );
   const nombre = usuarioRows[0]?.nombre || 'Participante';
 
-  // Guardar resultados finales
-  await pool.query(
-    `INSERT INTO resultados_posttest
-     (telefono, puntaje_pre, puntaje_post, porcentaje_pre, porcentaje_post, hake, nivel_hake)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     ON CONFLICT (telefono) DO UPDATE
-     SET puntaje_post = $3, porcentaje_post = $5, hake = $6, nivel_hake = $7`,
-    [telefono, puntajePre, puntajePost,
-     Math.round(porcentajePre), Math.round(porcentajePost),
-     hakeRedondeado, nivelHake]
-  ).catch(() => {});
-
-  await pool.query(
-    "UPDATE usuarios SET etapa = 'finalizado' WHERE telefono = $1",
-    [telefono]
-  );
-
-  // Mensaje de resultados finales
+// Mensaje de resultados finales
   const msgFinal = [
     `${emojiHake} *RESULTADOS FINALES — ${nombre}*`,
     '━━━━━━━━━━━━━━━━━━━',
@@ -202,11 +185,12 @@ async function finalizarPosttest(telefono, idioma = 'es') {
     '',
     '━━━━━━━━━━━━━━━━━━━',
     '',
-    `Gracias por participar, *${nombre}*!`,
-    'Tu aporte es parte de la investigación científica en Pacayacu.',
-    ''.
-    
+    `¡Gracias por participar, *${nombre}*!`,
+    'Tu aporte es fundamental para fortalecer la ciencia ciudadana en Pacayacu.'
   ].join('\n');
+
+  // --- SOLUCIÓN: Enviamos el texto de despedida directamente sin botones ---
+  await enviarMensaje(telefono, msgFinal);
 }
 
 module.exports = { iniciarPosttest, procesarRespuestaPosttest };
