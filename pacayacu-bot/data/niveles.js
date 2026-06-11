@@ -273,7 +273,8 @@ const NIVELES = {
   jaguar: {
     id: 'jaguar', numero: 4, animal: 'Jaguar',
     etapa_inicio: 'nivel4_msg1', etapa_fin: 'nivel4_completado',
-    siguiente_nivel: null, siguiente_etapa: 'programa_completado',
+    siguiente_nivel: null, // 
+    // ...
 
     mensajes: {
       nivel4_msg1: {
