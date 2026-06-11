@@ -141,6 +141,9 @@ const recibirMensaje = async (req, res) => {
             else if (etapaActual === 'nivel3_completado' && textoMensaje === 'siguiente') {
                 await avanzarSiguienteNivel(numeroUsuario, 'anaconda', 'es', baseUrl);
             }
+            else if (etapaActual === 'nivel4_completado' || etapaActual === 'jaguar_completado') {
+                await finalizarPrograma(numeroUsuario, 'es', baseUrl);
+            }
             // ----------------------------
 
             // 5. Fase de Enseñanza (Niveles Capibara -> Jaguar)
@@ -150,16 +153,23 @@ const recibirMensaje = async (req, res) => {
 
             // 6. Transición al Post-Test
             else if (etapaActual === 'programa_completado') {
-                if (textoMensaje === 'posttest') {
+                // Si presiona el botón POSTTEST o escribe la palabra
+                if (textoMensaje === 'posttest' || textoMensaje.includes('test')) {
                      await iniciarPosttest(numeroUsuario);
+                } else {
+                     // Si escribe otra cosa, le recordamos que debe hacer el test
+                     await enviarBotones(
+                         numeroUsuario, 
+                         "🏆 ¡Felicidades por obtener tu certificado!\n\nPara completar tu proceso, es necesario realizar una breve evaluación final.", 
+                         [{ id: 'POSTTEST', title: 'Ir al Post-Test' }]
+                     );
                 }
             }
 
-            // 7. Fase Final (Ganancia de Hake)
+            // 7. Fase Final del Post-Test (Ganancia de Hake)
             else if (etapaActual.startsWith('posttest_')) {
                 await procesarRespuestaPosttest(numeroUsuario, textoMensaje, etapaActual);
             }
-
             // 8. Fallback o Finalizado
             else {
                await db.query(
