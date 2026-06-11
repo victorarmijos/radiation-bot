@@ -54,6 +54,7 @@ The database architecture enables the extraction of structured reports to evalua
 * **Acknowledgments:** We acknowledge the academic framework of the State University of Milagro (UNEMI) and the technical support and methodological guidance in software deployment provided by the ‘Zétesis’ Center for Scientific Research and Development.
 
 If you use this code or data derived from this project in your research, please cite the official repository hosted on Zenodo:
-> **Armijos-Vanega, V. (2026).** *Pacayacu Bot: Gamified Chatbot for Scientific Literacy on TENORM*. Zenodo. DOI: []
+> **Armijos-Vanega, V. (2026).** *Pacayacu Bot: Gamified Chatbot for Scientific Literacy on TENORM*. Zenodo.
+> DOI:[10.5281/zenodo.20644227]
 
 ```
