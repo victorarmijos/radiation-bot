@@ -1,5 +1,11 @@
-const axios = require('axios');
-const db = require('../config/db'); // Importamos la conexión real a Postgres
+const { iniciarDiagnostico, procesarRespuestaDiagnostico } = require('./diagnosticoController');
+const { iniciarNivel, procesarNivel, mostrarPuntaje } = require('./nivelesController');
+const { iniciarPosttest, procesarRespuestaPosttest } = require('./posttestController');
+const db = require('../config/db');
+
+// Variables configurables (Si quieres, puedes poner tu número real aquí para probar todo el flujo sin filtros)
+const MODO_PRUEBA = false; 
+const NUMEROS_ADMIN = ['393514770998']; 
 
 const recibirMensaje = async (req, res) => {
     try {
@@ -10,96 +16,71 @@ const recibirMensaje = async (req, res) => {
 
         if (message) {
             const numeroUsuario = message.from;
-            const textoMensaje = message.text?.body.toLowerCase().trim();
+            const textoMensaje = message.text?.body.toLowerCase().trim() || "";
 
-            // 1. BUSCAR USUARIO EN BASE DE DATOS
-            // (Si no existe, la base de datos nos lo dirá)
+            // --- LÓGICA DE USUARIOS ---
             let usuarioResult = await db.query('SELECT * FROM usuarios WHERE telefono = $1', [numeroUsuario]);
             
-            // Si es nuevo, lo creamos
             if (usuarioResult.rows.length === 0) {
-                await db.query('INSERT INTO usuarios (telefono) VALUES ($1)', [numeroUsuario]);
-                // Volvemos a leerlo para tener los datos frescos
-                usuarioResult = await db.query('SELECT * FROM usuarios WHERE telefono = $1', [numeroUsuario]);
+                // Nuevo usuario: Inicia en el diagnóstico
+                await db.query('INSERT INTO usuarios (telefono, etapa) VALUES ($1, $2)', [numeroUsuario, 'inicio']);
+                await iniciarDiagnostico(numeroUsuario);
+                return res.sendStatus(200);
             }
 
-            const usuario = usuarioResult.rows[0]; // Aquí están sus puntos reales
+            const usuario = usuarioResult.rows[0];
+            const etapaActual = usuario.etapa;
 
-            // 2. LÓGICA DE RESPUESTA (Igual que antes, pero guardando en BD)
-            let respuestaBot = "";
-            let nuevaEtapa = usuario.etapa;
-            let nuevosPuntos = usuario.puntos;
-
-            // --- FLUJO CONVERSACIONAL ---
-
-            if (textoMensaje === 'hola' || textoMensaje === 'menu') {
-                respuestaBot = `👋 Hola de nuevo. Tienes ${usuario.puntos} puntos.\n\n1️⃣ Aprender\n2️⃣ Quiz (+10 pts)\n3️⃣ Ver Ranking`;
-                nuevaEtapa = 'menu';
+            // --- EL DIRECTOR DE ORQUESTA (Enrutador) ---
+            
+            // 1. Fase de Diagnóstico Inicial
+            if (etapaActual.startsWith('esperando_') || etapaActual.startsWith('diagnostico_')) {
+                // Si la función requiere más parámetros según diagnosticoController.js, asegúrate de importarlas y usarlas aquí. 
+                // Por ahora, asumimos que procesarRespuestaDiagnostico maneja las respuestas A/B/C
+                await procesarRespuestaDiagnostico(numeroUsuario, textoMensaje, etapaActual);
             }
             
-            else if (textoMensaje === '2' || textoMensaje.includes('quiz')) {
-                respuestaBot = "☢️ PREGUNTA: ¿El sol emite radiación?\n\nA) Sí\nB) No";
-                nuevaEtapa = 'pregunta_sol';
+            // 2. Transición del Diagnóstico a los Niveles
+            else if (etapaActual === 'diagnostico_completado') {
+                await iniciarNivel(numeroUsuario, 'capibara', 'es', process.env.BASE_URL || 'https://radiation-bot.onrender.com');
             }
 
-            else if (usuario.etapa === 'pregunta_sol') {
-                if (textoMensaje === 'a' || textoMensaje.includes('si')) {
-                    nuevosPuntos += 10;
-                    respuestaBot = "✅ ¡Correcto! +10 Puntos para ti.";
-                    nuevaEtapa = 'menu';
-                } else {
-                    respuestaBot = "❌ Incorrecto. El sol es nuestra mayor fuente de radiación.";
-                    nuevaEtapa = 'menu';
+            // 3. Fase de Enseñanza (Niveles Capibara -> Jaguar)
+            else if (etapaActual.startsWith('nivel') || etapaActual.includes('quiz')) {
+                await procesarNivel(numeroUsuario, textoMensaje, etapaActual, 'es', process.env.BASE_URL);
+            }
+
+            // 4. Transición al Post-Test
+            else if (etapaActual === 'programa_completado') {
+                if (textoMensaje === 'posttest') {
+                     await iniciarPosttest(numeroUsuario);
                 }
             }
-            
-            else {
-                respuestaBot = "No entendí. Escribe 'Hola' para ver el menú.";
+
+            // 5. Fase Final (Ganancia de Hake)
+            else if (etapaActual.startsWith('posttest_')) {
+                await procesarRespuestaPosttest(numeroUsuario, textoMensaje, etapaActual);
             }
 
-            // 3. GUARDAR CAMBIOS EN LA BASE DE DATOS (Persistencia)
-            // Actualizamos puntos y etapa del usuario
-            await db.query(
-                'UPDATE usuarios SET puntos = $1, etapa = $2 WHERE telefono = $3',
-                [nuevosPuntos, nuevaEtapa, numeroUsuario]
-            );
+            // 6. Comandos Generales (En cualquier momento)
+            else if (textoMensaje === 'puntaje' || textoMensaje === 'progreso') {
+                 await mostrarPuntaje(numeroUsuario);
+            }
 
-            // Guardamos el log para tu investigación (Tabla interacciones)
-            await db.query(
-                'INSERT INTO interacciones (telefono, mensaje_usuario, respuesta_bot) VALUES ($1, $2, $3)',
-                [numeroUsuario, textoMensaje, respuestaBot]
-            );
-
-            // 4. ENVIAR A WHATSAPP
-            await enviarMensaje(numeroUsuario, respuestaBot);
+            // 7. Fallback o Finalizado
+            else {
+               // En este punto, el usuario ya terminó todo el proceso de Zétesis
+               // Se podría guardar el mensaje en interacciones con un tipo 'fallback' si es necesario.
+               await db.query(
+                    'INSERT INTO interacciones (telefono, tipo_mensaje, mensaje_usuario, etapa_al_momento) VALUES ($1, $2, $3, $4)',
+                    [numeroUsuario, 'fallback', textoMensaje, etapaActual]
+                );
+            }
         }
         res.sendStatus(200);
     } catch (error) {
-        console.error("Error en base de datos:", error);
+        console.error("Error crítico en botController:", error);
         res.sendStatus(500);
-    }
-};
-
-// ... (Mantén la función enviarMensaje igual que antes) ...
-// Copia aquí la función enviarMensaje del paso anterior
-const enviarMensaje = async (to, text) => {
-    /* ... código de axios ... */
-     try {
-        await axios({
-            method: 'POST',
-            url: `https://graph.facebook.com/v17.0/${process.env.PHONE_NUMBER_ID}/messages`,
-            headers: {
-                'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            data: {
-                messaging_product: 'whatsapp',
-                to: to,
-                text: { body: text }
-            }
-        });
-    } catch (error) {
-        console.error("Error enviando:", error.message);
     }
 };
 
