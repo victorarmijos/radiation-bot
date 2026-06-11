@@ -184,7 +184,7 @@ async function finalizarPosttest(telefono, idioma = 'es') {
   // Mensaje de resultados finales
   const msgFinal = [
     `${emojiHake} *RESULTADOS FINALES — ${nombre}*`,
-    '━━━━━━━━━━━━━━━━━━━━━━━',
+    '━━━━━━━━━━━━━━━━━━━',
     '',
     '📊 *Diagnóstico inicial:*',
     `   ${Math.round(porcentajePre)}% (${puntajePre} pts)`,
@@ -196,21 +196,17 @@ async function finalizarPosttest(telefono, idioma = 'es') {
     `   ⟨g⟩ = ${hakeRedondeado}`,
     `   ${nivelHake}`,
     '',
-    '━━━━━━━━━━━━━━━━━━━━━━━',
+    '━━━━━━━━━━━━━━━━━━━',
     '',
     descripcionHake,
     '',
-    '━━━━━━━━━━━━━━━━━━━━━━━',
+    '━━━━━━━━━━━━━━━━━━━',
     '',
     `Gracias por participar, *${nombre}*!`,
-    'Tu aporte es parte de la investigación',
-    'científica en Pacayacu.',
-    '',
-    'Presiona *CERTIFICADO* para recibir',
-    'tu certificado de Guardian Jaguar.'
+    'Tu aporte es parte de la investigación científica en Pacayacu.',
+    ''.
+    
   ].join('\n');
-
-  await enviarBotones(telefono, msgFinal, [{ id: 'CERTIFICADO', title: 'Certificado' }]);
 }
 
 module.exports = { iniciarPosttest, procesarRespuestaPosttest };
