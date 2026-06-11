@@ -1,5 +1,5 @@
 const { iniciarDiagnostico, procesarRespuestaDiagnostico } = require('./diagnosticoController');
-const { iniciarNivel, procesarNivel, mostrarPuntaje } = require('./nivelesController');
+const { iniciarNivel, procesarNivel, mostrarPuntaje, avanzarSiguienteNivel } = require('./nivelesController');
 const { iniciarPosttest, procesarRespuestaPosttest } = require('./posttestController');
 const db = require('../config/db');
 
@@ -130,6 +130,18 @@ const recibirMensaje = async (req, res) => {
             else if (etapaActual === 'diagnostico_completado') {
                 await iniciarNivel(numeroUsuario, 'capibara', 'es', baseUrl);
             }
+
+            // --- PUENTE ENTRE NIVELES ---
+            else if (etapaActual === 'nivel1_completado' && textoMensaje === 'siguiente') {
+                await avanzarSiguienteNivel(numeroUsuario, 'capibara', 'es', baseUrl);
+            }
+            else if (etapaActual === 'nivel2_completado' && textoMensaje === 'siguiente') {
+                await avanzarSiguienteNivel(numeroUsuario, 'guacamayo', 'es', baseUrl);
+            }
+            else if (etapaActual === 'nivel3_completado' && textoMensaje === 'siguiente') {
+                await avanzarSiguienteNivel(numeroUsuario, 'anaconda', 'es', baseUrl);
+            }
+            // ----------------------------
 
             // 5. Fase de Enseñanza (Niveles Capibara -> Jaguar)
             else if (etapaActual.startsWith('nivel') || etapaActual.includes('quiz')) {
