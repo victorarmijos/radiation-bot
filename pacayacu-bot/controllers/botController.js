@@ -27,7 +27,7 @@ const recibirMensaje = async (req, res) => {
 
             // 2. LÓGICA DE RESPUESTA (Igual que antes, pero guardando en BD)
             let respuestaBot = "";
-            let nuevaEtapa = usuario.etapa_actual;
+            let nuevaEtapa = usuario.etapa;
             let nuevosPuntos = usuario.puntos;
 
             // --- FLUJO CONVERSACIONAL ---
@@ -42,7 +42,7 @@ const recibirMensaje = async (req, res) => {
                 nuevaEtapa = 'pregunta_sol';
             }
 
-            else if (usuario.etapa_actual === 'pregunta_sol') {
+            else if (usuario.etapa === 'pregunta_sol') {
                 if (textoMensaje === 'a' || textoMensaje.includes('si')) {
                     nuevosPuntos += 10;
                     respuestaBot = "✅ ¡Correcto! +10 Puntos para ti.";
@@ -60,7 +60,7 @@ const recibirMensaje = async (req, res) => {
             // 3. GUARDAR CAMBIOS EN LA BASE DE DATOS (Persistencia)
             // Actualizamos puntos y etapa del usuario
             await db.query(
-                'UPDATE usuarios SET puntos = $1, etapa_actual = $2 WHERE telefono = $3',
+                'UPDATE usuarios SET puntos = $1, etapa = $2 WHERE telefono = $3',
                 [nuevosPuntos, nuevaEtapa, numeroUsuario]
             );
 

@@ -116,8 +116,7 @@ const NIVELES = {
           'Pero, *¿Toda la radiación viene de la naturaleza?* 🤔',
           '¡No! Algunas fuentes de radiación son naturales, pero otras son creadas por el ser humano. Por ejemplo, la radioterapia que se usa en hospitales para tratar el cáncer utiliza radiación producida con tecnología especial. 🏥⚛️',
           'También hay fuentes de radiación en el entorno son naturales, pero que pueden ser concentradas, como los tubos de los pozos petroleros.',
-          'Y eso es lo que nos preocupe en Pacayacu: el TENORM.',
-          
+          'Y eso es lo que nos preocupe en Pacayacu.',
           'Hay dos formas de exponerse al TENORM:',
           '',
           '1️⃣ *Externa* — la energía viaja por el aire.',
